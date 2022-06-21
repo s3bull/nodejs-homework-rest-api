@@ -28,12 +28,14 @@ const removeContact = async (contactId) => {
 const addContact = async (body) => {
   const data = await fs.readFile(contactsPath, "utf8");
   const contacts = JSON.parse(data);
-
-  contacts.push({
+  const newContact = {
     id: uuidv4(),
     ...body,
-  });
+  };
+
+  contacts.push(newContact);
   fs.writeFile(contactsPath, JSON.stringify(contacts));
+  return newContact;
 };
 
 const updateContact = async (contactId, body) => {

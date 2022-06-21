@@ -38,8 +38,8 @@ router.post(
   "/",
   validate(contactSchema),
   catchErrors(async (req, res, next) => {
-    await addContact(req.body);
-    res.status(200).send(serializeContactResponse(req.body));
+    const contact = await addContact(req.body);
+    res.status(201).send(contact);
   })
 );
 
