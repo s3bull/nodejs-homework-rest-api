@@ -5,10 +5,12 @@ const {
   addContact,
   removeContact,
   updateContact,
-} = require("../../models/contacts");
+  updateStatusContact,
+} = require("../../models/contacts.service");
 const {
   contactSchema,
   updContactSchema,
+  schemaUpdateFavorite,
 } = require("../../models/contacts.schema");
 const {
   serializeContactResponse,
@@ -21,7 +23,7 @@ router.get(
   "/",
   catchErrors(async (req, res, next) => {
     const contacts = await listContacts();
-    res.status(200).send(JSON.parse(contacts));
+    res.status(200).send(contacts);
   })
 );
 
@@ -63,6 +65,17 @@ router.put(
     const contact = req.body;
     await updateContact(req.params.contactId, req.body);
     res.status(200).send(serializeContactResponse(contact));
+  })
+);
+
+router.patch(
+  "/:contactId/favorite",
+  validate(schemaUpdateFavorite),
+  catchErrors(async (req, res, next) => {
+    const check = await getContactById(req.params.contactId);
+    if (!check) res.status(404).send({ message: "Not found" });
+    const contact = await updateStatusContact(req.params.contactId, req.body);
+    res.status(200).send({ message: contact });
   })
 );
 
