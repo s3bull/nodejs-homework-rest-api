@@ -6,6 +6,7 @@ exports.contactSchema = Joi.object({
   phone: Joi.string()
     .pattern(/^[0-9]+$/)
     .required(),
+  favorite: Joi.boolean(),
 });
 
 exports.updContactSchema = Joi.object({
@@ -13,3 +14,7 @@ exports.updContactSchema = Joi.object({
   email: Joi.string().email(),
   phone: Joi.string().pattern(/^[0-9]+$/),
 }).min(1);
+
+exports.schemaUpdateFavorite = Joi.object({
+  favorite: Joi.bool().required(),
+});
