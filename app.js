@@ -6,6 +6,7 @@ const path = require("path");
 
 dotenv.config({ path: path.join(__dirname, "./.env") });
 
+const authRouter = require("./routes/api/users");
 const contactsRouter = require("./routes/api/contacts");
 
 const app = express();
@@ -16,6 +17,7 @@ app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
 
+app.use("/api/users", authRouter);
 app.use("/api/contacts", contactsRouter);
 
 app.use((req, res) => {
@@ -23,7 +25,7 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  res.status(500).json({ message: err.message });
+  res.status(err.status || 500).json({ message: err.message });
 });
 
 module.exports = app;
