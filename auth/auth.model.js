@@ -20,6 +20,7 @@ const authSchema = new Schema({
     type: String,
     default: null,
   },
+  avatarURL: String,
 });
 
 exports.AuthModel = mongoose.model("User", authSchema);
