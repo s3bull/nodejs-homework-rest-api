@@ -1,4 +1,6 @@
 const { Router } = require("express");
+const fs = require("fs").promises;
+const path = require("path");
 const { authSchema } = require("../../auth/auth.schema");
 const {
   serializeUserResponse,
@@ -10,10 +12,13 @@ const {
   getCurrentUser,
   logout,
   updateSubscription,
+  updateAvatar,
 } = require("../../auth/auth.service");
 const { authorize } = require("../../shared/middlewares/autorize");
 const { catchErrors } = require("../../shared/middlewares/catch-errors");
+const { upload } = require("../../shared/middlewares/upload");
 const { validate } = require("../../shared/middlewares/validate");
+const Jimp = require("jimp");
 
 const router = Router();
 
@@ -66,6 +71,36 @@ router.patch(
 
     const user = await updateSubscription(req.userId, subscription);
     res.status(200).json(serializeUserResponse(user));
+  })
+);
+
+router.patch(
+  "/avatars",
+  authorize(),
+  upload.single("avatar"),
+  catchErrors(async (req, res, next) => {
+    await Jimp.read(req.file.path)
+      .then((avatar) => {
+        return avatar.resize(250, 250).write(path.join("/public/avatars"));
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+
+    try {
+      const resultUpload = path.join(
+        path.join("./public/avatars"),
+        req.file.filename
+      );
+      await fs.rename(req.file.path, resultUpload);
+      const avatarURL = path.join("avatars", req.file.filename);
+      const user = await updateAvatar(req.userId, avatarURL);
+
+      res.status(200).json(serializeUserResponse(user));
+    } catch (error) {
+      await fs.unlink(req.file.path);
+      return next(error);
+    }
   })
 );
 

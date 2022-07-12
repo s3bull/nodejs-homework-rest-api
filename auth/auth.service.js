@@ -2,6 +2,7 @@ const { Conflict, Unauthorized, NotFound } = require("http-errors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { AuthModel } = require("./auth.model");
+const gravatar = require("gravatar");
 
 const signUp = async (params) => {
   const { email, username, password } = params;
@@ -12,10 +13,13 @@ const signUp = async (params) => {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
+  const avatarURL = gravatar.url(email, { s: "200", r: "pg", d: "404" });
+
   const user = await AuthModel.create({
     email,
     username,
     password: passwordHash,
+    avatarURL,
   });
 
   return user;
@@ -72,10 +76,25 @@ const updateSubscription = async (userId, subscription) => {
   );
 };
 
+const updateAvatar = async (userId, avatarURL) => {
+  const user = await AuthModel.findById(userId);
+
+  if (!user) {
+    throw new Unauthorized("Not authorized");
+  }
+
+  return await AuthModel.findByIdAndUpdate(
+    userId,
+    { avatarURL },
+    { new: true }
+  );
+};
+
 module.exports = {
   signUp,
   signIn,
   logout,
   getCurrentUser,
   updateSubscription,
+  updateAvatar,
 };
