@@ -13,6 +13,8 @@ const {
   logout,
   updateSubscription,
   updateAvatar,
+  verifyEmail,
+  resendingEmail,
 } = require("../../auth/auth.service");
 const { authorize } = require("../../shared/middlewares/autorize");
 const { catchErrors } = require("../../shared/middlewares/catch-errors");
@@ -101,6 +103,26 @@ router.patch(
       await fs.unlink(req.file.path);
       return next(error);
     }
+  })
+);
+
+router.get(
+  "/verify/:verificationToken",
+  catchErrors(async (req, res, next) => {
+    await verifyEmail(req.params.verificationToken);
+    res.status(200).json({ message: "Verification successful" });
+  })
+);
+
+router.post(
+  "/verify",
+  catchErrors(async (req, res, next) => {
+    if (!req.body.email) {
+      res.status(400).json({ message: "Missing required field email" });
+    }
+
+    await resendingEmail(req.body.email);
+    res.status(200).json({ message: "Verification email sent" });
   })
 );
 
